@@ -1,7 +1,8 @@
 export class Mannequin {
-    constructor(x, y) {
+    constructor(x, y, color = '#333') {
         this.x = x;
         this.y = y;
+        this.color = color;
         this.width = 40;
         this.height = 100;
 
@@ -90,8 +91,8 @@ export class Mannequin {
     }
 
     draw(ctx) {
-        ctx.fillStyle = '#333';
-        ctx.strokeStyle = '#333';
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = this.color;
         ctx.lineWidth = 4;
 
         const centerX = this.x + this.width / 2;

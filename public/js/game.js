@@ -5,6 +5,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let mannequin;
+let enemy;
 let obstacles = [];
 
 const input = {
@@ -24,6 +25,9 @@ function init() {
 
     // Spawn mannequin in center
     mannequin = new Mannequin(100, canvas.height / 2); // Start on left
+
+    // Spawn Enemy (Red) on Right
+    enemy = new Mannequin(canvas.width - 200, canvas.height / 2, '#FF0000');
 
     // Spawn Obstacles (Rocks)
     obstacles = [
@@ -51,6 +55,9 @@ function init() {
 
 function update() {
     mannequin.update(input, canvas.height, obstacles); // Pass obstacles
+
+    // Update Enemy (No Inputs)
+    enemy.update({ left: false, right: false, jump: false }, canvas.height, obstacles);
 }
 
 function draw() {
@@ -67,6 +74,9 @@ function draw() {
 
     // Draw Mannequin
     mannequin.draw(ctx);
+
+    // Draw Enemy
+    if (enemy) enemy.draw(ctx);
 
     // Draw UI
     drawUI();
