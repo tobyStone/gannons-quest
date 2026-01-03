@@ -33,7 +33,7 @@ function init() {
     obstacles = [
         new Obstacle(400, canvas.height - 150, 100, 100),   // Big Rock
         new Obstacle(700, canvas.height - 100, 60, 50),     // Small Step
-        new Obstacle(850, canvas.height - 200, 80, 150),    // Tall Pillar
+        new Obstacle(850, canvas.height - 170, 80, 120),    // Tall Pillar
     ];
 
     // Input Listeners
