@@ -34,7 +34,7 @@ export class Mannequin {
         }
     }
 
-    update(input, canvasHeight, obstacles) {
+    update(input, canvasHeight, obstacles, canvasWidth) {
         // Mist Timer & Cooldown
         if (this.mistTimer > 0) {
             this.mistTimer--;
@@ -65,6 +65,10 @@ export class Mannequin {
                 }
             }
         }
+
+        // Screen Boundaries
+        if (this.x < 0) this.x = 0;
+        if (this.x + this.width > canvasWidth) this.x = canvasWidth - this.width;
 
         // Jump
         if (input.jump && this.grounded) {

@@ -70,10 +70,10 @@ function init() {
 }
 
 function update() {
-    mannequin.update(input, canvas.height, obstacles); // Pass obstacles
+    mannequin.update(input, canvas.height, obstacles, canvas.width); // Pass obstacles and screen width
 
     // Update Enemy (No Inputs)
-    enemy.update({ left: false, right: false, jump: false }, canvas.height, obstacles);
+    enemy.update({ left: false, right: false, jump: false }, canvas.height, obstacles, canvas.width);
 }
 
 function draw() {
