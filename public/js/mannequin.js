@@ -25,16 +25,26 @@ export class Mannequin {
 
         // Mist Ability
         this.mistTimer = 0;
+        this.cooldownTimer = 0;
     }
 
     triggerMist() {
-        this.mistTimer = 60; // 60 frames ~ 1 second
+        if (this.cooldownTimer <= 0 && this.mistTimer <= 0) {
+            this.mistTimer = 60; // 60 frames ~ 1 second
+        }
     }
 
     update(input, canvasHeight, obstacles) {
-        // Mist Timer
+        // Mist Timer & Cooldown
         if (this.mistTimer > 0) {
             this.mistTimer--;
+            if (this.mistTimer === 0) {
+                this.cooldownTimer = 60; // Set cooldown when mist ends
+            }
+        }
+
+        if (this.cooldownTimer > 0) {
+            this.cooldownTimer--;
         }
 
         // Horizontal Movement
