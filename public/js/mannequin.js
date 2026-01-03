@@ -126,6 +126,14 @@ export class Mannequin {
             ctx.restore();
         }
 
+        if (this.color === '#333') {
+            this.drawGannon(ctx);
+        } else {
+            this.drawDefault(ctx);
+        }
+    }
+
+    drawDefault(ctx) {
         ctx.fillStyle = this.color;
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 4;
@@ -141,12 +149,10 @@ export class Mannequin {
         const torsoY = this.y + this.headRadius * 2;
         ctx.fillRect(centerX - this.torsoWidth / 2, torsoY, this.torsoWidth, this.torsoHeight);
 
-        // 3. Arms (Simple Lines for now)
+        // 3. Arms
         ctx.beginPath();
-        // Left Arm
         ctx.moveTo(centerX - this.torsoWidth / 2, torsoY + 5);
         ctx.lineTo(centerX - this.torsoWidth / 2 - 15, torsoY + 30);
-        // Right Arm
         ctx.moveTo(centerX + this.torsoWidth / 2, torsoY + 5);
         ctx.lineTo(centerX + this.torsoWidth / 2 + 15, torsoY + 30);
         ctx.stroke();
@@ -154,10 +160,60 @@ export class Mannequin {
         // 4. Legs
         const legStartY = torsoY + this.torsoHeight;
         ctx.beginPath();
-        // Left Leg
         ctx.moveTo(centerX - 5, legStartY);
         ctx.lineTo(centerX - 10, legStartY + 30);
-        // Right Leg
+        ctx.moveTo(centerX + 5, legStartY);
+        ctx.lineTo(centerX + 10, legStartY + 30);
+        ctx.stroke();
+    }
+
+    drawGannon(ctx) {
+        const centerX = this.x + this.width / 2;
+
+        // 1. Head (Dark Olive Skin)
+        ctx.fillStyle = '#556B2F';
+        ctx.beginPath();
+        ctx.arc(centerX, this.y + this.headRadius, this.headRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Hair (Crimson Red)
+        ctx.fillStyle = '#DC143C';
+        ctx.beginPath();
+        ctx.arc(centerX, this.y + this.headRadius - 5, this.headRadius + 2, Math.PI, 0); // Top half arc
+        ctx.fill();
+
+        // 3. Torso (Dark Armor)
+        const torsoY = this.y + this.headRadius * 2;
+        ctx.fillStyle = '#2F4F4F'; // Dark Slate Grey
+        ctx.fillRect(centerX - this.torsoWidth / 2, torsoY, this.torsoWidth, this.torsoHeight);
+
+        // Gold Details on Chest
+        ctx.fillStyle = '#FFD700'; // Gold
+        ctx.beginPath();
+        ctx.arc(centerX, torsoY + 15, 5, 0, Math.PI * 2); // Amulet
+        ctx.fill();
+
+        // 4. Arms (Dark Skin + Armor)
+        ctx.strokeStyle = '#556B2F'; // Skin color arms
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(centerX - this.torsoWidth / 2, torsoY + 5);
+        ctx.lineTo(centerX - this.torsoWidth / 2 - 15, torsoY + 30);
+        ctx.moveTo(centerX + this.torsoWidth / 2, torsoY + 5);
+        ctx.lineTo(centerX + this.torsoWidth / 2 + 15, torsoY + 30);
+        ctx.stroke();
+
+        // Shoulder Pads (Gold)
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(centerX - this.torsoWidth / 2 - 5, torsoY, 5, 10); // Left
+        ctx.fillRect(centerX + this.torsoWidth / 2, torsoY, 5, 10); // Right
+
+        // 5. Legs (Boots)
+        const legStartY = torsoY + this.torsoHeight;
+        ctx.strokeStyle = '#8B4513'; // Brown Boots
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, legStartY);
+        ctx.lineTo(centerX - 10, legStartY + 30);
         ctx.moveTo(centerX + 5, legStartY);
         ctx.lineTo(centerX + 10, legStartY + 30);
         ctx.stroke();
