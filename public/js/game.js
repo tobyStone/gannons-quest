@@ -55,6 +55,8 @@ function init() {
         if (e.code === 'ArrowRight') input.right = true;
         if (e.code === 'ArrowLeft') input.left = true;
         if (e.code === 'Space') input.jump = true;
+
+        if (e.code === 'KeyA') mannequin.triggerMist();
     });
 
     window.addEventListener('keyup', (e) => {

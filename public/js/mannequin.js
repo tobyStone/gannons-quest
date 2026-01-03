@@ -22,9 +22,21 @@ export class Mannequin {
         // Health
         this.maxHealth = 5;
         this.health = 5;
+
+        // Mist Ability
+        this.mistTimer = 0;
+    }
+
+    triggerMist() {
+        this.mistTimer = 60; // 60 frames ~ 1 second
     }
 
     update(input, canvasHeight, obstacles) {
+        // Mist Timer
+        if (this.mistTimer > 0) {
+            this.mistTimer--;
+        }
+
         // Horizontal Movement
         if (input.right) this.vx = this.speed;
         else if (input.left) this.vx = -this.speed;
@@ -91,6 +103,19 @@ export class Mannequin {
     }
 
     draw(ctx) {
+        // Draw Mist
+        if (this.mistTimer > 0) {
+            const centerX = this.x + this.width / 2;
+            const centerY = this.y + this.height / 2;
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#800080'; // Purple
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 60, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
         ctx.fillStyle = this.color;
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 4;
