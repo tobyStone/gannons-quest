@@ -67,6 +67,31 @@ function draw() {
 
     // Draw Mannequin
     mannequin.draw(ctx);
+
+    // Draw UI
+    drawUI();
+}
+
+function drawUI() {
+    const startX = 30;
+    const startY = 30;
+    const radius = 10;
+    const spacing = 30;
+
+    for (let i = 0; i < mannequin.maxHealth; i++) {
+        ctx.beginPath();
+        const x = startX + (i * spacing);
+        ctx.arc(x, startY, radius, 0, Math.PI * 2);
+
+        if (i < mannequin.health) {
+            ctx.fillStyle = '#FF0000'; // Red for health
+            ctx.fill();
+        }
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#FFFFFF'; // White border
+        ctx.stroke();
+    }
 }
 
 function gameLoop() {

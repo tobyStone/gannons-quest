@@ -17,6 +17,10 @@ export class Mannequin {
         this.headRadius = 15;
         this.torsoWidth = 20;
         this.torsoHeight = 50;
+
+        // Health
+        this.maxHealth = 5;
+        this.health = 5;
     }
 
     update(input, canvasHeight, obstacles) {
