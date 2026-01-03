@@ -19,11 +19,25 @@ export class Mannequin {
         this.torsoHeight = 50;
     }
 
-    update(input, canvasHeight) {
+    update(input, canvasHeight, obstacles) {
         // Horizontal Movement
         if (input.right) this.vx = this.speed;
         else if (input.left) this.vx = -this.speed;
         else this.vx = 0;
+
+        // Apply Horizontal Velocity
+        this.x += this.vx;
+
+        // Horizontal Collision Check
+        for (let obs of obstacles) {
+            if (this.checkCollision(this, obs)) {
+                if (this.vx > 0) { // Moving Right
+                    this.x = obs.x - this.width;
+                } else if (this.vx < 0) { // Moving Left
+                    this.x = obs.x + obs.width;
+                }
+            }
+        }
 
         // Jump
         if (input.jump && this.grounded) {
@@ -31,23 +45,44 @@ export class Mannequin {
             this.grounded = false;
         }
 
-        // Apply Physics
+        // Apply Gravity
         this.vy += this.gravity;
 
-        this.x += this.vx;
+        // Apply Vertical Velocity
         this.y += this.vy;
 
-        // Floor Collision (Simple Plains)
-        // Let's assume the floor is 50px from the bottom
-        const floorY = canvasHeight - 50;
+        this.grounded = false; // Assume in air until collision proves otherwise
 
+        // Vertical Collision Check (Obstacles)
+        for (let obs of obstacles) {
+            if (this.checkCollision(this, obs)) {
+                if (this.vy > 0) { // Falling down
+                    this.y = obs.y - this.height;
+                    this.vy = 0;
+                    this.grounded = true;
+                } else if (this.vy < 0) { // Jumping up (hitting ceiling? - usually rare for rocks)
+                    this.y = obs.y + obs.height;
+                    this.vy = 0;
+                }
+            }
+        }
+
+        // Floor Collision
+        const floorY = canvasHeight - 50;
         if (this.y + this.height > floorY) {
             this.y = floorY - this.height;
             this.vy = 0;
             this.grounded = true;
-        } else {
-            this.grounded = false;
         }
+    }
+
+    checkCollision(rect1, rect2) {
+        return (
+            rect1.x < rect2.x + rect2.width &&
+            rect1.x + rect1.width > rect2.x &&
+            rect1.y < rect2.y + rect2.height &&
+            rect1.y + rect1.height > rect2.y
+        );
     }
 
     draw(ctx) {

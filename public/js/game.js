@@ -1,9 +1,12 @@
 import { Mannequin } from './mannequin.js';
+import { Obstacle } from './obstacle.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let mannequin;
+let obstacles = [];
+
 const input = {
     left: false,
     right: false,
@@ -20,7 +23,14 @@ function init() {
     window.addEventListener('resize', resize);
 
     // Spawn mannequin in center
-    mannequin = new Mannequin(canvas.width / 2, canvas.height / 2);
+    mannequin = new Mannequin(100, canvas.height / 2); // Start on left
+
+    // Spawn Obstacles (Rocks)
+    obstacles = [
+        new Obstacle(400, canvas.height - 150, 100, 100),   // Big Rock
+        new Obstacle(700, canvas.height - 100, 60, 50),     // Small Step
+        new Obstacle(850, canvas.height - 200, 80, 150),    // Tall Pillar
+    ];
 
     // Input Listeners
     window.addEventListener('keydown', (e) => {
@@ -40,7 +50,7 @@ function init() {
 }
 
 function update() {
-    mannequin.update(input, canvas.height);
+    mannequin.update(input, canvas.height, obstacles); // Pass obstacles
 }
 
 function draw() {
@@ -51,6 +61,9 @@ function draw() {
     ctx.fillStyle = '#4CAF50'; // Green
     const floorHeight = 50;
     ctx.fillRect(0, canvas.height - floorHeight, canvas.width, floorHeight);
+
+    // Draw Obstacles
+    obstacles.forEach(obs => obs.draw(ctx));
 
     // Draw Mannequin
     mannequin.draw(ctx);
