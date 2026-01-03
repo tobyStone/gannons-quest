@@ -1,0 +1,9 @@
+{
+  "name": "gannon-s-quest",
+  "version": "0.0.0",
+  "description": "Gannon's Quest",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  }
+}
