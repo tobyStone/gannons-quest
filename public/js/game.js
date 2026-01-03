@@ -1,5 +1,6 @@
 import { Mannequin } from './mannequin.js';
 import { Obstacle } from './obstacle.js';
+import { Tree, Cloud } from './scenery.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -7,6 +8,8 @@ const ctx = canvas.getContext('2d');
 let mannequin;
 let enemy;
 let obstacles = [];
+let trees = [];
+let clouds = [];
 
 const input = {
     left: false,
@@ -35,6 +38,17 @@ function init() {
         new Obstacle(700, canvas.height - 100, 60, 50),     // Small Step
         new Obstacle(850, canvas.height - 170, 80, 120),    // Tall Pillar
     ];
+
+    // Spawn Scenery
+    const floorY = canvas.height - 50;
+    // Trees
+    for (let i = 0; i < 8; i++) {
+        trees.push(new Tree(Math.random() * canvas.width, floorY));
+    }
+    // Clouds
+    for (let i = 0; i < 5; i++) {
+        clouds.push(new Cloud(Math.random() * canvas.width, 50 + Math.random() * 100));
+    }
 
     // Input Listeners
     window.addEventListener('keydown', (e) => {
@@ -68,6 +82,10 @@ function draw() {
     ctx.fillStyle = '#4CAF50'; // Green
     const floorHeight = 50;
     ctx.fillRect(0, canvas.height - floorHeight, canvas.width, floorHeight);
+
+    // Draw Scenery (Background)
+    clouds.forEach(c => c.draw(ctx));
+    trees.forEach(t => t.draw(ctx));
 
     // Draw Obstacles
     obstacles.forEach(obs => obs.draw(ctx));
