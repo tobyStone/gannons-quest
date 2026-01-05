@@ -150,22 +150,46 @@ export class Mannequin {
     }
 
     drawDefault(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 4;
-
+        // Pseudo-3D Mannequin
         const centerX = this.x + this.width / 2;
+        const depth = 10;
 
-        // 1. Head
+        // 1. Head (Sphere with Gradient)
+        const headGrad = ctx.createRadialGradient(
+            centerX - 5, this.y + this.headRadius - 5, 2,
+            centerX, this.y + this.headRadius, this.headRadius
+        );
+        headGrad.addColorStop(0, '#666'); // Highlight
+        headGrad.addColorStop(1, this.color); // Base color
+
+        ctx.fillStyle = headGrad;
         ctx.beginPath();
         ctx.arc(centerX, this.y + this.headRadius, this.headRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // 2. Torso
+        // 2. Torso (3D Box)
         const torsoY = this.y + this.headRadius * 2;
+
+        // Torso Side (Shadow)
+        ctx.fillStyle = '#1a1a1a'; // Darker side
+        ctx.beginPath();
+        ctx.moveTo(centerX + this.torsoWidth / 2, torsoY);
+        ctx.lineTo(centerX + this.torsoWidth / 2 + depth / 2, torsoY - depth / 2);
+        ctx.lineTo(centerX + this.torsoWidth / 2 + depth / 2, torsoY + this.torsoHeight - depth / 2);
+        ctx.lineTo(centerX + this.torsoWidth / 2, torsoY + this.torsoHeight);
+        ctx.fill();
+
+        // Torso Front
+        const torsoGrad = ctx.createLinearGradient(centerX - this.torsoWidth / 2, torsoY, centerX + this.torsoWidth / 2, torsoY);
+        torsoGrad.addColorStop(0, this.color);
+        torsoGrad.addColorStop(1, '#222'); // Gradient for roundness
+        ctx.fillStyle = torsoGrad;
         ctx.fillRect(centerX - this.torsoWidth / 2, torsoY, this.torsoWidth, this.torsoHeight);
 
-        // 3. Arms
+        // 3. Arms (Rounded strokes)
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(centerX - this.torsoWidth / 2, torsoY + 5);
         ctx.lineTo(centerX - this.torsoWidth / 2 - 15, torsoY + 30);
@@ -173,7 +197,7 @@ export class Mannequin {
         ctx.lineTo(centerX + this.torsoWidth / 2 + 15, torsoY + 30);
         ctx.stroke();
 
-        // 4. Legs
+        // 4. Legs (Rounded strokes)
         const legStartY = torsoY + this.torsoHeight;
         ctx.beginPath();
         ctx.moveTo(centerX - 5, legStartY);
