@@ -70,15 +70,15 @@ function init() {
         if (e.code === 'Space') input.jump = false;
     });
 
-});
 
-// Revival Button Listener
-revivalBtn.addEventListener('click', () => {
-    resetGame();
-});
 
-// Start Loop
-requestAnimationFrame(gameLoop);
+    // Revival Button Listener
+    revivalBtn.addEventListener('click', () => {
+        resetGame();
+    });
+
+    // Start Loop
+    requestAnimationFrame(gameLoop);
 }
 
 function resetGame() {
