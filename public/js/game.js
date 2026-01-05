@@ -1,6 +1,6 @@
 import { Mannequin } from './mannequin.js';
 import { Obstacle } from './obstacle.js';
-import { Tree, Cloud } from './scenery.js';
+import { Tree, Cloud, BackgroundLayer } from './scenery.js';
 import { Projectile } from './projectile.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -13,6 +13,7 @@ let obstacles = [];
 let trees = [];
 let clouds = [];
 let projectiles = [];
+let backgroundLayers = [];
 
 const input = {
     left: false,
@@ -28,6 +29,14 @@ function resize() {
 function init() {
     resize();
     window.addEventListener('resize', resize);
+
+    // Init Parallax Backgrounds
+    backgroundLayers = [
+        new BackgroundLayer('#A2D9F7', 0, 0), // Sky Color (Base)
+        new BackgroundLayer('#C0E6FA', 0.2, 200), // Distant Mountains/Hills Color
+        new BackgroundLayer('#87CEEB', 0.5, 100)  // Closer Hills
+    ];
+
 
     // Spawn mannequin in center
     mannequin = new Mannequin(100, canvas.height / 2); // Start on left
@@ -70,8 +79,6 @@ function init() {
         if (e.code === 'Space') input.jump = false;
     });
 
-
-
     // Revival Button Listener
     revivalBtn.addEventListener('click', () => {
         resetGame();
@@ -108,6 +115,9 @@ function resetGame() {
 
 function update() {
     mannequin.update(input, canvas.height, obstacles, canvas.width); // Pass obstacles and screen width
+
+    // Update Parallax (Simulate camera movement with player velocity)
+    backgroundLayers.forEach(layer => layer.update(mannequin.vx));
 
     // Update Projectiles
     for (let i = projectiles.length - 1; i >= 0; i--) {
@@ -155,32 +165,73 @@ function update() {
 }
 
 function draw() {
-    // Clear Screen (Sky Blue is set in CSS, so just clear)
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 1. Sky Gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    skyGrad.addColorStop(0, '#87CEEB'); // Sky Blue
+    skyGrad.addColorStop(1, '#E0F7FA'); // Light Cyan at horizon
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Floor (Plains)
-    ctx.fillStyle = '#4CAF50'; // Green
-    const floorHeight = 50;
-    ctx.fillRect(0, canvas.height - floorHeight, canvas.width, floorHeight);
+    // 2. Parallax Backgrounds (Mountains)
+    backgroundLayers.forEach(layer => layer.draw(ctx, canvas.width, canvas.height));
 
-    // Draw Scenery (Background)
+    // 3. Draw Scenery (Background Objects)
     clouds.forEach(c => c.draw(ctx));
     trees.forEach(t => t.draw(ctx));
 
-    // Draw Obstacles
+    // 4. Draw Floor (Pseudo-3D)
+    const floorHeight = 50;
+    const floorY = canvas.height - floorHeight;
+
+    // Floor Top Face (Grass)
+    ctx.fillStyle = '#4CAF50';
+    ctx.fillRect(0, floorY, canvas.width, floorHeight);
+
+    // Floor Front Face (Darker Earth)
+    ctx.fillStyle = '#2E8B57'; // SeaGreen (Darker)
+    ctx.fillRect(0, floorY + 10, canvas.width, floorHeight); // Offset slightly down? No, just the bottom part
+    // Actually, let's make the "3D" side be the bottom edge of the screen if we had a camera, but here just a strip at the bottom
+    ctx.fillStyle = '#3E2723'; // Dark dirt
+    ctx.fillRect(0, floorY + 30, canvas.width, 20);
+
+
+    // 5. Draw Obstacles (with 3D effects)
     obstacles.forEach(obs => obs.draw(ctx));
 
-    // Draw Projectiles
+    // 6. Draw Shadows (for Mannequin and Enemy)
+    drawShadow(mannequin);
+    if (enemy) drawShadow(enemy);
+
+    // 7. Draw Projectiles
     projectiles.forEach(p => p.draw(ctx));
 
-    // Draw Mannequin
+    // 8. Draw Characters
     mannequin.draw(ctx);
-
-    // Draw Enemy
     if (enemy) enemy.draw(ctx);
 
-    // Draw UI
+    // 9. Draw UI
     drawUI();
+}
+
+function drawShadow(entity) {
+    const floorY = canvas.height - 50;
+    // Don't draw shadow if too high up? Or make it smaller
+    const distToFloor = floorY - (entity.y + entity.height);
+    const scale = Math.max(0.5, 1 - distToFloor / 200);
+    const alpha = Math.max(0.1, 0.5 - distToFloor / 200);
+
+    if (distToFloor > -50) { // Only draw if somewhat near ground
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.beginPath();
+        // Shadow position logic: directly under character x, fixed y at floor or on obstacle?
+        // Simple global floor shadow for now
+        let shadowY = floorY;
+        // Check if on obstacle
+        // If entity.y + height is near obstacle top, use that
+
+        ctx.ellipse(entity.x + entity.width / 2, shadowY, (entity.width / 2) * scale, 10 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
 }
 
 function drawUI() {
