@@ -30,7 +30,9 @@ function init() {
     mannequin = new Mannequin(100, canvas.height / 2); // Start on left
 
     // Spawn Enemy (Red) on Right
-    enemy = new Mannequin(canvas.width - 200, canvas.height / 2, '#FF0000');
+    const enemyImage = new Image();
+    enemyImage.src = 'images/enemy_monk.png';
+    enemy = new Mannequin(canvas.width - 200, canvas.height / 2, enemyImage);
 
     // Spawn Obstacles (Rocks)
     obstacles = [

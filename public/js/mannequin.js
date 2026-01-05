@@ -2,7 +2,13 @@ export class Mannequin {
     constructor(x, y, color = '#333') {
         this.x = x;
         this.y = y;
-        this.color = color;
+        if (typeof color === 'string') {
+            this.color = color;
+            this.image = null;
+        } else {
+            this.color = null;
+            this.image = color;
+        }
         this.width = 40;
         this.height = 100;
 
@@ -132,6 +138,8 @@ export class Mannequin {
 
         if (this.color === '#333') {
             this.drawGannon(ctx);
+        } else if (this.image) {
+            ctx.drawImage(this.image, this.x - 20, this.y - 20, this.width + 40, this.height + 40); // Draw slightly larger to fit bounding box visual
         } else {
             this.drawDefault(ctx);
         }
