@@ -1,6 +1,7 @@
 import { Mannequin } from './mannequin.js';
 import { Obstacle } from './obstacle.js';
 import { Tree, Cloud } from './scenery.js';
+import { Projectile } from './projectile.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -10,6 +11,7 @@ let enemy;
 let obstacles = [];
 let trees = [];
 let clouds = [];
+let projectiles = [];
 
 const input = {
     left: false,
@@ -74,8 +76,49 @@ function init() {
 function update() {
     mannequin.update(input, canvas.height, obstacles, canvas.width); // Pass obstacles and screen width
 
+    // Update Projectiles
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        p.update();
+
+        // Check Collision with Mannequin
+        const dist = Math.hypot(p.x - (mannequin.x + mannequin.width / 2), p.y - (mannequin.y + mannequin.headRadius));
+        if (dist < p.radius + mannequin.headRadius + 10) { // Simple hit box
+            mannequin.health--;
+            projectiles.splice(i, 1);
+            continue;
+        }
+
+        // Remove if off screen
+        if (p.x < -50 || p.x > canvas.width + 50) {
+            projectiles.splice(i, 1);
+        }
+    }
+
     // Update Enemy (No Inputs)
-    enemy.update({ left: false, right: false, jump: false }, canvas.height, obstacles, canvas.width);
+    if (enemy) {
+        enemy.update({ left: false, right: false, jump: false }, canvas.height, obstacles, canvas.width);
+        enemy.updateFireTimer();
+
+        // Enemy AI Fire
+        if (enemy.canFire()) {
+            const ex = enemy.x + enemy.width / 2;
+            const ey = enemy.y + enemy.height / 2;
+            // Aim at player
+            const mx = mannequin.x + mannequin.width / 2;
+            const my = mannequin.y + mannequin.height / 2;
+
+            const dx = mx - ex;
+            const dy = my - ey;
+            const angle = Math.atan2(dy, dx);
+            const speed = 7;
+
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+
+            projectiles.push(new Projectile(ex, ey, vx, vy));
+        }
+    }
 }
 
 function draw() {
@@ -93,6 +136,9 @@ function draw() {
 
     // Draw Obstacles
     obstacles.forEach(obs => obs.draw(ctx));
+
+    // Draw Projectiles
+    projectiles.forEach(p => p.draw(ctx));
 
     // Draw Mannequin
     mannequin.draw(ctx);
@@ -129,7 +175,16 @@ function drawUI() {
 function gameLoop() {
     update();
     draw();
-    requestAnimationFrame(gameLoop);
+    if (mannequin.health > 0) {
+        requestAnimationFrame(gameLoop);
+    } else {
+        // Game Over
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#FFF';
+        ctx.font = '50px Arial';
+        ctx.fillText('Game Over', canvas.width / 2 - 130, canvas.height / 2);
+    }
 }
 
 // Kickoff

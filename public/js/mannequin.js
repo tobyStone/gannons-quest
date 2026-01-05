@@ -32,6 +32,10 @@ export class Mannequin {
         // Mist Ability
         this.mistTimer = 0;
         this.cooldownTimer = 0;
+
+        // Projectile Ability
+        this.fireTimer = 0;
+        this.fireCooldown = 120; // Fire every ~2 seconds
     }
 
     triggerMist() {
@@ -229,5 +233,19 @@ export class Mannequin {
         ctx.moveTo(centerX + 5, legStartY);
         ctx.lineTo(centerX + 10, legStartY + 30);
         ctx.stroke();
+    }
+
+    canFire() {
+        if (this.fireTimer <= 0) {
+            this.fireTimer = this.fireCooldown;
+            return true;
+        }
+        return false;
+    }
+
+    updateFireTimer() {
+        if (this.fireTimer > 0) {
+            this.fireTimer--;
+        }
     }
 }
