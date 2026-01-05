@@ -5,6 +5,7 @@ import { Projectile } from './projectile.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const revivalBtn = document.getElementById('revivalBtn');
 
 let mannequin;
 let enemy;
@@ -69,7 +70,39 @@ function init() {
         if (e.code === 'Space') input.jump = false;
     });
 
-    // Start Loop
+});
+
+// Revival Button Listener
+revivalBtn.addEventListener('click', () => {
+    resetGame();
+});
+
+// Start Loop
+requestAnimationFrame(gameLoop);
+}
+
+function resetGame() {
+    // Reset Mannequin
+    mannequin.health = mannequin.maxHealth;
+    mannequin.x = 100;
+    mannequin.y = canvas.height / 2;
+    mannequin.vx = 0;
+    mannequin.vy = 0;
+
+    // Reset Enemy
+    if (enemy) {
+        enemy.x = canvas.width - 200;
+        enemy.y = canvas.height / 2;
+        enemy.fireTimer = 0;
+    }
+
+    // Clear Projectiles
+    projectiles = [];
+
+    // Hide Button
+    revivalBtn.style.display = 'none';
+
+    // Restart Loop
     requestAnimationFrame(gameLoop);
 }
 
@@ -184,6 +217,9 @@ function gameLoop() {
         ctx.fillStyle = '#FFF';
         ctx.font = '50px Arial';
         ctx.fillText('Game Over', canvas.width / 2 - 130, canvas.height / 2);
+
+        // Show Revival Button
+        revivalBtn.style.display = 'block';
     }
 }
 

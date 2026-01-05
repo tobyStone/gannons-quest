@@ -14,3 +14,23 @@ body, html {
 canvas {
     display: block;
 }
+
+#revivalBtn {
+    position: absolute;
+    top: 60%; /* Positioned below center text */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 30px;
+    font-size: 24px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none; /* Hidden by default */
+    z-index: 100;
+}
+
+#revivalBtn:hover {
+    background-color: #45a049;
+}
