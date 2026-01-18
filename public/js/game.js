@@ -137,6 +137,34 @@ function update() {
             continue;
         }
 
+        // Check Collision with Obstacles
+        let hit = false;
+        for (const obs of obstacles) {
+            if (p.x > obs.x && p.x < obs.x + obs.width &&
+                p.y > obs.y && p.y < obs.y + obs.height) {
+                hit = true;
+                break;
+            }
+        }
+        if (hit) {
+            projectiles.splice(i, 1);
+            continue;
+        }
+
+        // Check Collision with Trees
+        for (const tree of trees) {
+            // Trunk collision only
+            if (p.x > tree.x && p.x < tree.x + tree.trunkWidth &&
+                p.y > tree.floorY - tree.trunkHeight && p.y < tree.floorY) {
+                hit = true;
+                break;
+            }
+        }
+        if (hit) {
+            projectiles.splice(i, 1);
+            continue;
+        }
+
         // Remove if off screen
         if (p.x < -50 || p.x > canvas.width + 50 || p.y < -50 || p.y > canvas.height + 50) {
             projectiles.splice(i, 1);
