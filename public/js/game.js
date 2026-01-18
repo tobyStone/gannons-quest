@@ -161,6 +161,15 @@ function update() {
 
             projectiles.push(new Projectile(ex, ey, vx, vy));
         }
+
+        // Check Mist Attack Collision
+        if (mannequin.mistTimer > 0) {
+            const dist = Math.hypot((mannequin.x + mannequin.width / 2) - (enemy.x + enemy.width / 2),
+                (mannequin.y + mannequin.height / 2) - (enemy.y + enemy.height / 2));
+            if (dist < 100) { // Mist Radius (60) + Enemy Radius (~40)
+                enemy = null; // Kill enemy instantly for now
+            }
+        }
     }
 }
 
