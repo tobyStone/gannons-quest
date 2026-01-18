@@ -16,8 +16,7 @@ export class Mannequin {
         this.vx = 0;
         this.vy = 0;
         this.speed = 5;
-        this.jumpForce = -12;
-        this.gravity = 0.5;
+        // Gravity removed for top-down
         this.grounded = false;
 
         // Body proportions
@@ -62,58 +61,64 @@ export class Mannequin {
         else if (input.left) this.vx = -this.speed;
         else this.vx = 0;
 
-        // Apply Horizontal Velocity
-        this.x += this.vx;
+        // Vertical Movement (Top-Down)
+        if (input.down) this.vy = this.speed;
+        else if (input.up) this.vy = -this.speed;
+        else this.vy = 0;
 
-        // Horizontal Collision Check
-        for (let obs of obstacles) {
-            if (this.checkCollision(this, obs)) {
-                if (this.vx > 0) { // Moving Right
-                    this.x = obs.x - this.width;
-                } else if (this.vx < 0) { // Moving Left
-                    this.x = obs.x + obs.width;
-                }
-            }
-        }
+        // Apply Velocity
+        this.x += this.vx;
+        this.y += this.vy;
 
         // Screen Boundaries
         if (this.x < 0) this.x = 0;
         if (this.x + this.width > canvasWidth) this.x = canvasWidth - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y + this.height > canvasHeight) this.y = canvasHeight - this.height;
 
-        // Jump
-        if (input.jump && this.grounded) {
-            this.vy = this.jumpForce;
-            this.grounded = false;
-        }
-
-        // Apply Gravity
-        this.vy += this.gravity;
-
-        // Apply Vertical Velocity
-        this.y += this.vy;
-
-        this.grounded = false; // Assume in air until collision proves otherwise
-
-        // Vertical Collision Check (Obstacles)
+        // Collision Check (Simple stop on collision)
         for (let obs of obstacles) {
             if (this.checkCollision(this, obs)) {
-                if (this.vy > 0) { // Falling down
-                    this.y = obs.y - this.height;
-                    this.vy = 0;
-                    this.grounded = true;
-                } else if (this.vy < 0) { // Jumping up (hitting ceiling? - usually rare for rocks)
-                    this.y = obs.y + obs.height;
-                    this.vy = 0;
-                }
+                // Determine overlap and push back
+                // This is a simple way: revert position on collision axis
+                // But since we moved both, we need to know which one caused it.
+                // For simplicity in this step, let's revert both? No, that feels sticky.
+                // Let's check X and Y separately in a real physics engine, but for now:
+
+                // Revert X if X caused it?
+                // A better approach for top down without complex physics:
+                // Move X, check collision, if hit, revert X.
+                // Move Y, check collision, if hit, revert Y.
             }
         }
 
-        // Floor Collision
-        const floorY = canvasHeight - 50;
-        if (this.y + this.height > floorY) {
-            this.y = floorY - this.height;
-            this.vy = 0;
-            this.grounded = true;
+        // Revised Movement with separate collision checks
+        // Undo the previous addition, let's do it properly step-by-step
+        this.x -= this.vx;
+        this.y -= this.vy; // Reset to start of frame
+
+        // 1. Move X
+        this.x += this.vx;
+        if (this.x < 0) this.x = 0;
+        if (this.x + this.width > canvasWidth) this.x = canvasWidth - this.width;
+
+        for (let obs of obstacles) {
+            if (this.checkCollision(this, obs)) {
+                if (this.vx > 0) this.x = obs.x - this.width;
+                else if (this.vx < 0) this.x = obs.x + obs.width;
+            }
+        }
+
+        // 2. Move Y
+        this.y += this.vy;
+        if (this.y < 0) this.y = 0;
+        if (this.y + this.height > canvasHeight) this.y = canvasHeight - this.height;
+
+        for (let obs of obstacles) {
+            if (this.checkCollision(this, obs)) {
+                if (this.vy > 0) this.y = obs.y - this.height;
+                else if (this.vy < 0) this.y = obs.y + obs.height;
+            }
         }
     }
 
