@@ -2,6 +2,7 @@ import { Mannequin } from './mannequin.js';
 import { Obstacle } from './obstacle.js';
 import { Tree, Cloud, BackgroundLayer } from './scenery.js';
 import { Projectile } from './projectile.js';
+import { Heart } from './item.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -13,6 +14,7 @@ let obstacles = [];
 let trees = [];
 let clouds = [];
 let projectiles = [];
+let items = [];
 let backgroundLayers = [];
 
 const input = {
@@ -32,11 +34,7 @@ function init() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Init Parallax Backgrounds (Optional in Top Down, but maybe useful for "floor" textures or clouds?)
-    // In top-down, parallax usually implies depth below or above.
-    // Let's keep them as "clouds" or just ignore for now.
     backgroundLayers = [];
-
 
     // Spawn mannequin in center
     mannequin = new Mannequin(100, canvas.height / 2);
@@ -103,16 +101,23 @@ function resetGame() {
     mannequin.y = canvas.height / 2;
     mannequin.vx = 0;
     mannequin.vy = 0;
+    mannequin.isHolding = false;
 
     // Reset Enemy
     if (enemy) {
         enemy.x = canvas.width - 200;
         enemy.y = canvas.height / 2;
         enemy.fireTimer = 0;
+    } else {
+        // Respawn Enemy if dead
+        const enemyImage = new Image();
+        enemyImage.src = 'images/enemy_monk.png';
+        enemy = new Mannequin(canvas.width - 200, canvas.height / 2, enemyImage);
     }
 
-    // Clear Projectiles
+    // Clear Projectiles & Items
     projectiles = [];
+    items = [];
 
     // Hide Button
     revivalBtn.style.display = 'none';
@@ -122,6 +127,11 @@ function resetGame() {
 }
 
 function update() {
+    // Pause movement if holding item
+    if (mannequin.isHolding) {
+        return;
+    }
+
     mannequin.update(input, canvas.height, obstacles, canvas.width);
 
     // Update Projectiles
@@ -131,7 +141,7 @@ function update() {
 
         // Check Collision with Mannequin
         const dist = Math.hypot(p.x - (mannequin.x + mannequin.width / 2), p.y - (mannequin.y + mannequin.headRadius));
-        if (dist < p.radius + mannequin.headRadius + 10) { // Simple hit box
+        if (dist < p.radius + mannequin.headRadius + 10) {
             mannequin.health--;
             projectiles.splice(i, 1);
             continue;
@@ -171,6 +181,29 @@ function update() {
         }
     }
 
+    // Update Items
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        // Check collision
+        const dist = Math.hypot((mannequin.x + mannequin.width / 2) - item.x, (mannequin.y + mannequin.height / 2) - item.y);
+        if (dist < 40) {
+            // Pick up!
+            items.splice(i, 1);
+            mannequin.isHolding = true;
+            mannequin.holdingItem = item; // Store ref if needed relative draw, or just generic hold
+
+            // 3 Second Animation
+            setTimeout(() => {
+                mannequin.maxHealth = Math.min(mannequin.maxHealth + 1, 10); // Cap at 10 maybe?
+                mannequin.health = mannequin.maxHealth;
+                mannequin.isHolding = false;
+            }, 3000);
+
+            continue;
+        }
+    }
+
+
     // Update Enemy (No Inputs)
     if (enemy) {
         // Simple Chase AI
@@ -189,31 +222,27 @@ function update() {
         enemy.update(enemyInput, canvas.height, obstacles, canvas.width);
         enemy.updateFireTimer();
 
-        // Enemy AI Fire
         if (enemy.canFire()) {
             const ex = enemy.x + enemy.width / 2;
             const ey = enemy.y + enemy.height / 2;
-            // Aim at player
             const mx = mannequin.x + mannequin.width / 2;
             const my = mannequin.y + mannequin.height / 2;
-
             const dx = mx - ex;
             const dy = my - ey;
             const angle = Math.atan2(dy, dx);
             const speed = 7;
-
             const vx = Math.cos(angle) * speed;
             const vy = Math.sin(angle) * speed;
-
             projectiles.push(new Projectile(ex, ey, vx, vy));
         }
 
-        // Check Mist Attack Collision
         if (mannequin.mistTimer > 0) {
             const dist = Math.hypot((mannequin.x + mannequin.width / 2) - (enemy.x + enemy.width / 2),
                 (mannequin.y + mannequin.height / 2) - (enemy.y + enemy.height / 2));
-            if (dist < 100) { // Mist Radius
-                enemy = null; // Kill enemy
+            if (dist < 100) {
+                // Enemy dies, drop Heart
+                items.push(new Heart(enemy.x, enemy.y));
+                enemy = null;
             }
         }
     }
@@ -260,8 +289,43 @@ function draw() {
         renderables.push({ type: 'projectile', y: p.y, obj: p });
     });
 
+    // Items (Hearts)
+    items.forEach(item => {
+        renderables.push({ type: 'item', y: item.y + item.height, obj: item });
+    });
+
     // Sort by Y (smaller Y first -> draw first)
     renderables.sort((a, b) => a.y - b.y);
+
+    // Draw Renderables
+    renderables.forEach(item => {
+        // Draw Shadow just before object
+        if (item.type === 'mannequin') {
+            drawShadow(item.obj);
+        }
+        item.obj.draw(ctx);
+
+        // If holding, draw held item above head (cheap hack, normally part of drawHolding)
+        // Actually drawHolding handles it? No, drawHolding just poses. 
+        // We should draw the heart above the player if isHolding.
+        if (item.type === 'mannequin' && item.obj.isHolding && item.obj === mannequin) {
+            // Draw floating heart above head
+            // New Heart instance just for visual or reuse? 
+            // Just draw a heart shape
+            ctx.save();
+            ctx.translate(mannequin.x + 10, mannequin.y - 40);
+            // Quick Heart Draw
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(0, -6, -10, -6, -10, 0);
+            ctx.bezierCurveTo(-10, 10, 0, 16, 0, 20);
+            ctx.bezierCurveTo(0, 16, 10, 10, 10, 0);
+            ctx.bezierCurveTo(10, -6, 0, -6, 0, 0);
+            ctx.fill();
+            ctx.restore();
+        }
+    });
 
     // Draw Renderables
     renderables.forEach(item => {

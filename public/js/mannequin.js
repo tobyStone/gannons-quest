@@ -35,6 +35,9 @@ export class Mannequin {
         // Projectile Ability
         this.fireTimer = 0;
         this.fireCooldown = 120; // Fire every ~2 seconds
+
+        // Item Holding
+        this.isHolding = false;
     }
 
     triggerMist() {
@@ -145,13 +148,64 @@ export class Mannequin {
             ctx.restore();
         }
 
-        if (this.color === '#333') {
+        if (this.isHolding) {
+            this.drawHolding(ctx);
+        } else if (this.color === '#333') {
             this.drawGannon(ctx);
         } else if (this.image) {
             ctx.drawImage(this.image, this.x - 20, this.y - 20, this.width + 40, this.height + 40); // Draw slightly larger to fit bounding box visual
         } else {
             this.drawDefault(ctx);
         }
+    }
+
+    drawHolding(ctx) {
+        // Draw character with arms up
+        // Reuse default drawing style but modify arms
+
+        // 1. Head
+        const centerX = this.x + this.width / 2;
+        const headGrad = ctx.createRadialGradient(
+            centerX - 5, this.y + this.headRadius - 5, 2,
+            centerX, this.y + this.headRadius, this.headRadius
+        );
+        headGrad.addColorStop(0, '#666');
+        headGrad.addColorStop(1, this.color || '#333');
+
+        ctx.fillStyle = headGrad;
+        ctx.beginPath();
+        ctx.arc(centerX, this.y + this.headRadius, this.headRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Torso
+        const torsoY = this.y + this.headRadius * 2;
+        const torsoGrad = ctx.createLinearGradient(centerX - this.torsoWidth / 2, torsoY, centerX + this.torsoWidth / 2, torsoY);
+        torsoGrad.addColorStop(0, this.color || '#333');
+        torsoGrad.addColorStop(1, '#222');
+        ctx.fillStyle = torsoGrad;
+        ctx.fillRect(centerX - this.torsoWidth / 2, torsoY, this.torsoWidth, this.torsoHeight);
+
+        // 3. Arms (UP)
+        ctx.strokeStyle = this.color || '#333';
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        // Left Arm Up
+        ctx.moveTo(centerX - this.torsoWidth / 2, torsoY + 5);
+        ctx.lineTo(centerX - this.torsoWidth / 2 - 10, torsoY - 20);
+        // Right Arm Up
+        ctx.moveTo(centerX + this.torsoWidth / 2, torsoY + 5);
+        ctx.lineTo(centerX + this.torsoWidth / 2 + 10, torsoY - 20);
+        ctx.stroke();
+
+        // 4. Legs
+        const legStartY = torsoY + this.torsoHeight;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 5, legStartY);
+        ctx.lineTo(centerX - 10, legStartY + 30);
+        ctx.moveTo(centerX + 5, legStartY);
+        ctx.lineTo(centerX + 10, legStartY + 30);
+        ctx.stroke();
     }
 
     drawDefault(ctx) {
