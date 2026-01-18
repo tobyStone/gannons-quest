@@ -38,6 +38,9 @@ export class Mannequin {
 
         // Item Holding
         this.isHolding = false;
+
+        // Enemy Properties
+        this.canShoot = true; // Default to true
     }
 
     triggerMist() {
